@@ -335,7 +335,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJbOBmdo24dljVfmLTcSqN6Y6Co-JLYPyt71t94g8e7DdDiDoxb9MpB3AUIKM6I8lC/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxwy64w9N_7v1jafhBLaksp2wuAC7emnLiAIpjn2nMk73bvyQAWSSRCnYTGrq4rwMGp/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -410,7 +410,10 @@
       const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ action:'saveInscription', matricule, nom, prenom, cin, telephone:telNorm, email, unite, poste, responsable }) });
       const data = await res.json();
-      if (!data.success) throw new Error(data.message || 'Erreur serveur');
+      if (!data.success) {
+        if (data.error === 'deja_inscrit') throw new Error('Ce matricule est déjà inscrit.');
+        throw new Error(data.error || data.message || 'Erreur serveur');
+      }
       showPage('success-page');
       ['insc-matricule','insc-nom','insc-prenom','insc-cin','insc-tel','insc-email'].forEach(id => {
         const el = document.getElementById(id); if(el) el.value='';
@@ -552,7 +555,7 @@
       const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ action:'accepterTous' }) });
       const data = await res.json();
-      if (!data.success) throw new Error(data.message || 'Erreur serveur');
+      if (!data.success) throw new Error(data.error || data.message || 'Erreur serveur');
       allInscriptions.forEach(i => { if ((i.statut||'attente') === 'attente') i.statut = 'accepte'; });
       renderInscriptions(currentFilter);
       const badge = document.getElementById('insc-count');
@@ -659,7 +662,7 @@
       const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ action:'updateStatut', ligne, statut }) });
       const data = await res.json();
-      if (!data.success) throw new Error(data.message || 'Erreur serveur');
+      if (!data.success) throw new Error(data.error || data.message || 'Erreur serveur');
       const i = allInscriptions.find(x => x.ligne === ligne);
       if (i) i.statut = statut;
       renderInscriptions(currentFilter);
@@ -711,7 +714,7 @@
       const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ action:'saveConfig', code, sessionStart:session+":00", dureeHeures:duree, fichiers, adminPassword:adminPw }) });
       const data = await res.json();
-      if (!data.success) throw new Error(data.message || 'Erreur serveur');
+      if (!data.success) throw new Error(data.error || data.message || 'Erreur serveur');
       currentConfig = { ...currentConfig, sessionStart:session+":00", dureeHeures:duree, fichiers, adminPassword:adminPw };
       okEl.textContent = 'Config sauvegardée !'; okEl.style.display='block';
       setTimeout(() => okEl.style.display='none', 4000);
