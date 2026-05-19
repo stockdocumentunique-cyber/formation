@@ -80,6 +80,11 @@
   .btn-refuse { background: #fee2e2; color: #991b1b; }
   .btn-refuse:hover { background: #fecaca; }
   .admin-section-title { font-size: 11px; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin: 1.5rem 0 1rem; padding-bottom: 8px; border-bottom: 1px solid #e2e8f0; }
+  .admin-tabs { display: flex; gap: 6px; margin-bottom: 1.2rem; background: #f1f5f9; padding: 5px; border-radius: 12px; }
+  .admin-tab { flex: 1; text-align: center; padding: 10px 6px; font-size: 13px; font-weight: 500; color: #64748b; background: transparent; border: none; border-radius: 9px; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .admin-tab.active { background: #fff; color: #1e40af; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .admin-tab-content { display: none; }
+  .admin-tab-content.active { display: block; }
   .admin-field { margin-bottom: 1rem; }
   .admin-field label { display: block; font-size: 12px; font-weight: 500; color: #64748b; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
   .admin-field input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-family: 'DM Mono', monospace; color: #1e293b; outline: none; }
@@ -316,6 +321,13 @@
     </div>
     <div class="card">
 
+      <div class="admin-tabs">
+        <button class="admin-tab active" id="tab-btn-inscriptions" onclick="switchAdminTab('inscriptions')">📋 Inscriptions</button>
+        <button class="admin-tab" id="tab-btn-presences" onclick="switchAdminTab('presences')">✅ Présences</button>
+        <button class="admin-tab" id="tab-btn-config" onclick="switchAdminTab('config')">⚙️ Config</button>
+      </div>
+
+      <div class="admin-tab-content active" id="tab-inscriptions">
       <p class="admin-section-title">📋 Demandes d'inscription <span id="insc-count" class="count-badge" style="display:none;"></span></p>
       <div class="filter-bar">
         <button class="filter-btn active" id="filter-all" onclick="filterInscriptions('all')">Tous</button>
@@ -335,7 +347,9 @@
         </button>
       </div>
       <div id="admin-inscriptions"><p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Chargement...</p></div>
+      </div>
 
+      <div class="admin-tab-content" id="tab-presences">
       <p class="admin-section-title">✅ Suivi de présence</p>
       <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px;margin-bottom:12px;">
         <p style="font-size:13px;font-weight:500;color:#0369a1;margin-bottom:8px;">Ouvrir une session de pointage</p>
@@ -366,7 +380,9 @@
         <span id="pres-count" class="count-badge" style="display:none;"></span>
       </div>
       <div id="admin-presences"><p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Cliquez sur Actualiser pour voir les présences.</p></div>
+      </div>
 
+      <div class="admin-tab-content" id="tab-config">
       <p class="admin-section-title">🔗 URL Apps Script</p>
       <div class="admin-field">
         <label>URL de déploiement</label>
@@ -399,6 +415,7 @@
       <div class="code-display">
         <span id="code-show">—</span>
         <p style="font-size:12px;color:#6b7280;margin-top:4px;">Code session actuel</p>
+      </div>
       </div>
     </div>
   </div>
@@ -681,6 +698,17 @@
     const dj = document.getElementById('dejainscrit-page');
     if (e.key === 'Enter' && dj && dj.style.display !== 'none') checkStatut();
   });
+
+  function switchAdminTab(tab) {
+    ['inscriptions','presences','config'].forEach(t => {
+      const content = document.getElementById('tab-' + t);
+      const btn = document.getElementById('tab-btn-' + t);
+      if (content) content.classList.toggle('active', t === tab);
+      if (btn) btn.classList.toggle('active', t === tab);
+    });
+    // Charger les présences automatiquement au 1er affichage de l'onglet
+    if (tab === 'presences') refreshPresences();
+  }
 
   async function loadAdminForm() {
     document.getElementById('admin-url').value = SCRIPT_URL || '';
