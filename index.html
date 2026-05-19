@@ -335,7 +335,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyTBageHfbUOZjjFQisiMDJJFQ-6abGHgZVjthtI6PfJBgb_4_VJIdh1cZJ9R7vF24/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkNtYJfN0f7OtoQztvdMBMGHT6MbPt9B4ASWW2PGgsNHfA7zV44ISm8N93ww4qMfcJ/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -355,7 +355,7 @@
       const res = await fetch(SCRIPT_URL + "?action=getConfig&t=" + Date.now());
       const data = await res.json();
       if (data.success) currentConfig = data.config;
-    } catch(e) {}
+    } catch(e) { console.warn('Erreur chargement config :', e.message); }
     if (hash === "#admin") { showPage('admin-pw-page'); }
     else { showPage('home-page'); }
   }
@@ -368,7 +368,7 @@
       fillSelect('insc-unite', data.unites || []);
       fillSelect('insc-poste', data.postes || []);
       fillSelect('insc-responsable', data.responsables || []);
-    } catch(e) {}
+    } catch(e) { console.warn('Erreur chargement listes :', e.message); }
   }
 
   function fillSelect(id, items) {
@@ -399,14 +399,18 @@
     if (!matricule||!nom||!prenom||!cin||!tel||!unite||!poste||!responsable) {
       err.textContent = 'Veuillez remplir tous les champs.'; err.style.display='block'; return;
     }
-    if (!/^\d{10}$/.test(tel)) {
-      err.textContent = 'Numéro de téléphone invalide — 10 chiffres requis.'; err.style.display='block'; return;
+    // Validation téléphone Maroc : 07XXXXXXXX, 06XXXXXXXX, ou +212XXXXXXXXX
+    const telNorm = tel.replace(/^(\+212|00212)/, '0');
+    if (!/^(06|07)\d{8}$/.test(telNorm)) {
+      err.textContent = 'Numéro invalide — format marocain requis (06/07XXXXXXXX ou +212XXXXXXXXX).'; err.style.display='block'; return;
     }
 
     btn.disabled=true; btn.textContent='Envoi en cours...';
     try {
-      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'saveInscription', matricule, nom, prenom, cin, telephone:tel, email, unite, poste, responsable }) });
+      const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ action:'saveInscription', matricule, nom, prenom, cin, telephone:telNorm, email, unite, poste, responsable }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Erreur serveur');
       showPage('success-page');
       ['insc-matricule','insc-nom','insc-prenom','insc-cin','insc-tel','insc-email'].forEach(id => {
         const el = document.getElementById(id); if(el) el.value='';
@@ -415,7 +419,7 @@
         const el = document.getElementById(id); if(el) el.selectedIndex=0;
       });
     } catch(e) {
-      err.textContent='Erreur de connexion — réessayez.'; err.style.display='block';
+      err.textContent = 'Erreur : ' + (e.message || 'Connexion impossible — réessayez.'); err.style.display='block';
     }
     btn.disabled=false; btn.textContent='Envoyer ma demande';
   }
@@ -438,8 +442,7 @@
           const r2 = await fetch(SCRIPT_URL + "?action=getConfig&t=" + Date.now());
           const d2 = await r2.json();
           if (d2.success) currentConfig = d2.config;
-        } catch(e) {}
-        showPage('access-page');
+        } catch(e) { console.warn('Erreur rechargement config :', e.message); }
         document.getElementById('access-welcome').textContent = '👋 Bienvenue ' + (data.nom || matricule) + ' !';
         renderFiles(); startTimer();
       } else if (data.status === 'attente') {
@@ -546,13 +549,17 @@
     const btn = document.getElementById('btn-accepter-tous');
     btn.disabled = true; btn.textContent = 'Envoi en cours...';
     try {
-      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ action:'accepterTous' }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Erreur serveur');
       allInscriptions.forEach(i => { if ((i.statut||'attente') === 'attente') i.statut = 'accepte'; });
       renderInscriptions(currentFilter);
       const badge = document.getElementById('insc-count');
       badge.style.display = 'none';
-    } catch(e) {}
+    } catch(e) {
+      alert('Erreur lors de l\'acceptation : ' + (e.message || 'Connexion impossible.'));
+    }
     btn.disabled = false; btn.textContent = 'Accepter tous les en attente';
   }
 
@@ -576,7 +583,7 @@
         if (wrap) wrap.style.display = attente > 0 ? 'block' : 'none';
         renderInscriptions(currentFilter);
       }
-    } catch(e) {}
+    } catch(e) { console.warn('Erreur chargement inscriptions :', e.message); }
   }
 
   function normalizeStatut(val) {
@@ -649,12 +656,16 @@
 
   async function updateStatut(ligne, statut) {
     try {
-      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ action:'updateStatut', ligne, statut }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Erreur serveur');
       const i = allInscriptions.find(x => x.ligne === ligne);
       if (i) i.statut = statut;
       renderInscriptions(currentFilter);
-    } catch(e) {}
+    } catch(e) {
+      alert('Erreur mise à jour statut : ' + (e.message || 'Connexion impossible.'));
+    }
   }
 
   function renderFichiers(fichiers) {
@@ -697,8 +708,10 @@
     btn.disabled=true; btn.textContent='Envoi en cours...';
     errEl.style.display='none'; okEl.style.display='none';
     try {
-      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ action:'saveConfig', code, sessionStart:session+":00", dureeHeures:duree, fichiers, adminPassword:adminPw }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.message || 'Erreur serveur');
       currentConfig = { ...currentConfig, sessionStart:session+":00", dureeHeures:duree, fichiers, adminPassword:adminPw };
       okEl.textContent = 'Config sauvegardée !'; okEl.style.display='block';
       setTimeout(() => okEl.style.display='none', 4000);
