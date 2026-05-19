@@ -34,7 +34,7 @@
   .loading-screen { text-align: center; padding: 3rem 1rem; color: #64748b; }
   .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  #home-page, #inscription-page, #dejainscrit-page, #access-page, #admin-pw-page, #admin-page, #success-page { display: none; }
+  #home-page, #inscription-page, #dejainscrit-page, #presence-page, #access-page, #admin-pw-page, #admin-page, #success-page { display: none; }
   .home-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 1.5rem; }
   .home-btn { display: flex; align-items: center; gap: 14px; background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 1.2rem 1.5rem; cursor: pointer; transition: all 0.2s; text-decoration: none; }
   .home-btn:hover { border-color: #1e40af; background: #eff6ff; }
@@ -137,6 +137,16 @@
         </div>
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </div>
+      <div class="home-btn" onclick="showPage('presence-page'); loadPresencePage();">
+        <div class="home-btn-icon" style="background:#cffafe;">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0891b2" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        </div>
+        <div class="home-btn-text">
+          <h3>Confirmer ma présence</h3>
+          <p>Pointer votre présence à la formation</p>
+        </div>
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </div>
     </div>
   </div>
 
@@ -212,6 +222,32 @@
       <button class="btn" id="check-btn" onclick="checkStatut()">Vérifier mon statut</button>
       <button class="btn outline" onclick="showPage('home-page')">Retour</button>
       <div class="error-msg" id="check-error"></div>
+    </div>
+  </div>
+
+  <!-- PRESENCE PAGE (pointage stagiaire) -->
+  <div id="presence-page">
+    <div class="logo">
+      <h1>Confirmer ma présence</h1>
+      <p>Pointez votre présence à la formation</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Thème de formation</label>
+        <select id="pres-theme"><option value="">-- Sélectionner --</option></select>
+      </div>
+      <div class="field">
+        <label>Matricule</label>
+        <input type="text" id="pres-matricule" placeholder="Ex: 500701" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>Code de séance</label>
+        <input type="text" id="pres-code" placeholder="Code affiché en salle" autocomplete="off"/>
+      </div>
+      <button class="btn" id="pres-btn" onclick="pointerPresence()">Confirmer ma présence</button>
+      <button class="btn outline" onclick="showPage('home-page')">Retour</button>
+      <div class="success-msg" id="pres-success"></div>
+      <div class="error-msg" id="pres-error"></div>
     </div>
   </div>
 
@@ -300,6 +336,37 @@
       </div>
       <div id="admin-inscriptions"><p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Chargement...</p></div>
 
+      <p class="admin-section-title">✅ Suivi de présence</p>
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px;margin-bottom:12px;">
+        <p style="font-size:13px;font-weight:500;color:#0369a1;margin-bottom:8px;">Ouvrir une session de pointage</p>
+        <div class="admin-field">
+          <label>Thème</label>
+          <select id="pt-theme"><option value="">-- Sélectionner --</option></select>
+        </div>
+        <div class="admin-field">
+          <label>Code de séance (à afficher en salle)</label>
+          <input type="text" id="pt-code" placeholder="Ex: 4827"/>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div class="admin-field" style="flex:1;">
+            <label>Ouverture (HH:MM)</label>
+            <input type="time" id="pt-debut"/>
+          </div>
+          <div class="admin-field" style="flex:1;">
+            <label>Fermeture (HH:MM)</label>
+            <input type="time" id="pt-fin"/>
+          </div>
+        </div>
+        <button class="btn" onclick="ouvrirPointage()" id="pt-btn" style="margin-bottom:0;">Ouvrir le pointage</button>
+        <div class="success-msg" id="pt-success"></div>
+        <div class="error-msg" id="pt-error"></div>
+      </div>
+      <div style="margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+        <button class="filter-btn active" onclick="refreshPresences()" title="Actualiser">&#x21bb; Actualiser présences</button>
+        <span id="pres-count" class="count-badge" style="display:none;"></span>
+      </div>
+      <div id="admin-presences"><p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Cliquez sur Actualiser pour voir les présences.</p></div>
+
       <p class="admin-section-title">🔗 URL Apps Script</p>
       <div class="admin-field">
         <label>URL de déploiement</label>
@@ -339,14 +406,14 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyibqH6xbE8S5FcWEY2TNDKuIqcN61rWLPCqOf6h2LGl1QG0ALT4KMq8UPfTdDoB9A5/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwZ0l0faanO-5d8QMz1OLoOvo4DbDj8o2jfiQs3qNPT3pOnp29K5kKnpFoKoSQiLZ1V/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
   let currentFilter = 'all';
 
   function showPage(id) {
-    ['loading-page','home-page','inscription-page','dejainscrit-page','success-page','access-page','admin-pw-page','admin-page']
+    ['loading-page','home-page','inscription-page','dejainscrit-page','presence-page','success-page','access-page','admin-pw-page','admin-page']
       .forEach(p => { const el=document.getElementById(p); if(el) el.style.display='none'; });
     const page = document.getElementById(id);
     if(page) page.style.display = 'block';
@@ -473,6 +540,75 @@
     btn.disabled=false; btn.textContent='Vérifier mon statut';
   }
 
+  // Charge la liste des thèmes ayant une session de pointage active aujourd'hui
+  async function loadPresencePage() {
+    const sel = document.getElementById('pres-theme');
+    const err = document.getElementById('pres-error');
+    const ok  = document.getElementById('pres-success');
+    err.style.display='none'; ok.style.display='none';
+    sel.innerHTML = '<option value="">Chargement...</option>';
+    try {
+      const res = await fetch(SCRIPT_URL + "?action=getPointages&t=" + Date.now());
+      const data = await res.json();
+      const actifs = (data.pointages || []).filter(p => p.actif);
+      if (!data.success || actifs.length === 0) {
+        sel.innerHTML = '<option value="">-- Aucune session ouverte --</option>';
+        err.textContent = 'Aucune session de pointage n\'est ouverte pour le moment.';
+        err.style.display='block';
+        return;
+      }
+      sel.innerHTML = '<option value="">-- Sélectionner --</option>';
+      actifs.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.theme; opt.textContent = p.theme;
+        sel.appendChild(opt);
+      });
+    } catch(e) {
+      sel.innerHTML = '<option value="">-- Erreur --</option>';
+      err.textContent = 'Erreur de connexion — réessayez.'; err.style.display='block';
+    }
+  }
+
+  async function pointerPresence() {
+    const theme     = document.getElementById('pres-theme').value;
+    const matricule = document.getElementById('pres-matricule').value.trim().toUpperCase();
+    const code      = document.getElementById('pres-code').value.trim();
+    const err = document.getElementById('pres-error');
+    const ok  = document.getElementById('pres-success');
+    const btn = document.getElementById('pres-btn');
+    err.style.display='none'; ok.style.display='none';
+
+    if (!theme || !matricule || !code) {
+      err.textContent = 'Veuillez remplir tous les champs.'; err.style.display='block'; return;
+    }
+    btn.disabled=true; btn.textContent='Envoi...';
+    try {
+      const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'pointerPresence', matricule, code, theme }) });
+      const data = await res.json();
+      if (!data.success) {
+        const msgs = {
+          aucune_session: 'Aucune session de pointage ouverte pour ce thème.',
+          code_invalide:  'Code de séance incorrect.',
+          trop_tot:       'Le pointage n\'est pas encore ouvert. Patientez.',
+          trop_tard:      'Le délai de pointage est dépassé.',
+          non_inscrit:    'Vous n\'êtes pas inscrit à ce thème.',
+          non_accepte:    'Votre inscription n\'est pas encore validée.',
+          deja_pointe:    'Vous avez déjà pointé aujourd\'hui pour ce thème.'
+        };
+        throw new Error(msgs[data.error] || 'Erreur — réessayez.');
+      }
+      ok.textContent = '✅ Présence enregistrée pour ' + (data.nom || matricule) + ' — en attente de validation.';
+      ok.style.display='block';
+      document.getElementById('pres-matricule').value='';
+      document.getElementById('pres-code').value='';
+      document.getElementById('pres-theme').selectedIndex=0;
+    } catch(e) {
+      err.textContent = e.message || 'Erreur de connexion.'; err.style.display='block';
+    }
+    btn.disabled=false; btn.textContent='Confirmer ma présence';
+  }
+
   function convertDriveUrl(url) {
     if (!url) return url;
     let m = url.match(/\/file\/d\/([^\/]+)/);
@@ -555,6 +691,12 @@
     document.getElementById('code-show').textContent = cfg.code || '—';
     renderFichiers(cfg.fichiers || []);
     await loadInscriptions();
+    // Charger les thèmes dans le select de pointage admin
+    try {
+      const r = await fetch(SCRIPT_URL + "?action=getLists&t=" + Date.now());
+      const d = await r.json();
+      if (d.success) fillSelect('pt-theme', d.themes || []);
+    } catch(e) { console.warn('Erreur chargement thèmes admin :', e.message); }
   }
 
   async function accepterTous() {
@@ -580,6 +722,130 @@
     btn.textContent = '...'; btn.disabled = true;
     await loadInscriptions();
     btn.textContent = '↻'; btn.disabled = false;
+  }
+
+  // ===== SUIVI DE PRÉSENCE (ADMIN) =====
+  async function ouvrirPointage() {
+    const theme = document.getElementById('pt-theme').value;
+    const code  = document.getElementById('pt-code').value.trim();
+    const hd    = document.getElementById('pt-debut').value;
+    const hf    = document.getElementById('pt-fin').value;
+    const ok    = document.getElementById('pt-success');
+    const err   = document.getElementById('pt-error');
+    const btn   = document.getElementById('pt-btn');
+    ok.style.display='none'; err.style.display='none';
+    if (!theme || !code) {
+      err.textContent = 'Thème et code obligatoires.'; err.style.display='block'; return;
+    }
+    btn.disabled=true; btn.textContent='Ouverture...';
+    try {
+      const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'ouvrirPointage', theme, code, heureDebut:hd, heureFin:hf }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Erreur serveur');
+      ok.textContent = '✅ Pointage ouvert pour « ' + theme + ' ». Code : ' + code;
+      ok.style.display='block';
+      await refreshPresences();
+    } catch(e) {
+      err.textContent = 'Erreur : ' + (e.message || 'Connexion impossible.'); err.style.display='block';
+    }
+    btn.disabled=false; btn.textContent='Ouvrir le pointage';
+  }
+
+  async function refreshPresences() {
+    const wrap = document.getElementById('admin-presences');
+    wrap.innerHTML = '<p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Chargement...</p>';
+    try {
+      const r1 = await fetch(SCRIPT_URL + "?action=getPresences&t=" + Date.now());
+      const d1 = await r1.json();
+      const r2 = await fetch(SCRIPT_URL + "?action=getPointages&t=" + Date.now());
+      const d2 = await r2.json();
+      renderPresences(d1.presences || [], d2.pointages || []);
+    } catch(e) {
+      wrap.innerHTML = '<p style="font-size:13px;color:#ef4444;text-align:center;padding:1rem;">Erreur de chargement.</p>';
+    }
+  }
+
+  function renderPresences(presences, pointages) {
+    const wrap = document.getElementById('admin-presences');
+    const badge = document.getElementById('pres-count');
+    let html = '';
+
+    // Sessions actives, avec bouton fermer
+    const actifs = pointages.filter(p => p.actif);
+    if (actifs.length > 0) {
+      html += '<div style="margin-bottom:10px;">';
+      actifs.forEach(p => {
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;background:#ecfeff;border:1px solid #a5f3fc;border-radius:8px;padding:8px 10px;margin-bottom:6px;">'
+              + '<span style="font-size:12px;color:#0e7490;">🟢 <b>' + esc(p.theme) + '</b> · code ' + esc(p.code)
+              + (p.heureDebut||p.heureFin ? ' · ' + esc(p.heureDebut||'') + '→' + esc(p.heureFin||'') : '') + '</span>'
+              + '<button onclick="fermerPointage(' + p.ligne + ')" style="font-size:11px;background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;">Fermer</button>'
+              + '</div>';
+      });
+      html += '</div>';
+    }
+
+    if (presences.length === 0) {
+      html += '<p style="font-size:13px;color:#94a3b8;text-align:center;padding:1rem;">Aucune présence enregistrée.</p>';
+      badge.style.display='none';
+    } else {
+      // Grouper par thème
+      const byTheme = {};
+      presences.forEach(p => { (byTheme[p.theme] = byTheme[p.theme] || []).push(p); });
+      let total = 0;
+      Object.keys(byTheme).forEach(th => {
+        const list = byTheme[th];
+        total += list.length;
+        html += '<p style="font-size:13px;font-weight:600;color:#0f172a;margin:10px 0 6px;">📚 ' + esc(th)
+              + ' <span style="font-weight:400;color:#64748b;">(' + list.length + ')</span></p>';
+        list.forEach(p => {
+          const col = p.valide === 'valide' ? '#dcfce7' : p.valide === 'invalide' ? '#fee2e2' : '#f8fafc';
+          const stTxt = p.valide === 'valide' ? '✅ Validé' : p.valide === 'invalide' ? '❌ Invalidé' : '⏳ En attente';
+          html += '<div style="background:' + col + ';border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;margin-bottom:6px;">'
+                + '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+                + '<div><b style="font-size:13px;">' + esc(p.nom||p.matricule) + '</b>'
+                + '<div style="font-size:11px;color:#64748b;">' + esc(p.matricule) + ' · ' + esc(p.date) + ' ' + esc(p.heure) + '</div>'
+                + '<div style="font-size:11px;color:#475569;margin-top:2px;">' + stTxt + '</div></div>'
+                + '<div style="display:flex;gap:4px;flex-shrink:0;">'
+                + '<button onclick="validerPresence(' + p.ligne + ',\'valide\')" style="font-size:11px;background:#16a34a;color:#fff;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;">✓</button>'
+                + '<button onclick="validerPresence(' + p.ligne + ',\'invalide\')" style="font-size:11px;background:#ef4444;color:#fff;border:none;border-radius:6px;padding:4px 8px;cursor:pointer;">✕</button>'
+                + '</div></div></div>';
+        });
+      });
+      badge.textContent = total + ' présence(s)';
+      badge.style.display='inline-block';
+    }
+    wrap.innerHTML = html;
+  }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function validerPresence(ligne, valide) {
+    try {
+      const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'validerPresence', ligne, valide }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Erreur serveur');
+      await refreshPresences();
+    } catch(e) {
+      alert('Erreur : ' + (e.message || 'Connexion impossible.'));
+    }
+  }
+
+  async function fermerPointage(ligne) {
+    if (!confirm('Fermer cette session de pointage ?')) return;
+    try {
+      const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify({ action:'fermerPointage', ligne }) });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Erreur serveur');
+      await refreshPresences();
+    } catch(e) {
+      alert('Erreur : ' + (e.message || 'Connexion impossible.'));
+    }
   }
 
   async function loadInscriptions() {
