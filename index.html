@@ -339,7 +339,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5msfbKyVCSxjtWdqXbp-f-1hg8wUtMrdjQ83i1KIHY0qfItDnZJz7OIq-UPTCCGIB/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyibqH6xbE8S5FcWEY2TNDKuIqcN61rWLPCqOf6h2LGl1QG0ALT4KMq8UPfTdDoB9A5/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -419,7 +419,7 @@
         body: JSON.stringify({ action:'saveInscription', matricule, nom, prenom, theme, cin, telephone:telNorm, email, unite, poste, responsable }) });
       const data = await res.json();
       if (!data.success) {
-        if (data.error === 'deja_inscrit') throw new Error('Ce matricule est déjà inscrit.');
+        if (data.error === 'deja_inscrit') throw new Error('Ce matricule est déjà inscrit à ce thème de formation.');
         throw new Error(data.error || data.message || 'Erreur serveur');
       }
       showPage('success-page');
