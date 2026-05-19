@@ -163,6 +163,10 @@
         </div>
       </div>
       <div class="field">
+        <label>Thème de formation</label>
+        <select id="insc-theme"><option value="">-- Sélectionner --</option></select>
+      </div>
+      <div class="field">
         <label>CIN</label>
         <input type="text" id="insc-cin" placeholder="Ex: AB123456"/>
       </div>
@@ -335,7 +339,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw4jZWvwTNf_J1pLds59Q_gcolVP-cVHtXFdXtNPOmrlOYLGTljBvSHv4SaAMfaQew2/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz5msfbKyVCSxjtWdqXbp-f-1hg8wUtMrdjQ83i1KIHY0qfItDnZJz7OIq-UPTCCGIB/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
@@ -368,6 +372,7 @@
       fillSelect('insc-unite', data.unites || []);
       fillSelect('insc-poste', data.postes || []);
       fillSelect('insc-responsable', data.responsables || []);
+      fillSelect('insc-theme', data.themes || []);
     } catch(e) { console.warn('Erreur chargement listes :', e.message); }
   }
 
@@ -383,11 +388,12 @@
 
   async function submitInscription() {
     const matricule    = document.getElementById('insc-matricule').value.trim().toUpperCase();
-    const nom          = document.getElementById('insc-nom').value.trim();
-    const prenom       = document.getElementById('insc-prenom').value.trim();
+    const nom          = document.getElementById('insc-nom').value.trim().toUpperCase();
+    const prenom       = document.getElementById('insc-prenom').value.trim().toUpperCase();
     const nomComplet   = nom + ' ' + prenom;
+    const theme        = document.getElementById('insc-theme').value;
     const cin          = document.getElementById('insc-cin').value.trim().toUpperCase();
-    const tel          = document.getElementById('insc-tel').value.trim().replace(/\s/g,'');
+    const tel          = document.getElementById('insc-tel').value.trim().replace(/\D/g,'');
     const unite        = document.getElementById('insc-unite').value;
     const poste        = document.getElementById('insc-poste').value;
     const responsable  = document.getElementById('insc-responsable').value;
@@ -396,19 +402,21 @@
     const btn          = document.getElementById('insc-btn');
 
     err.style.display = 'none';
-    if (!matricule||!nom||!prenom||!cin||!tel||!unite||!poste||!responsable) {
+    if (!matricule||!nom||!prenom||!theme||!cin||!tel||!unite||!poste||!responsable) {
       err.textContent = 'Veuillez remplir tous les champs.'; err.style.display='block'; return;
     }
-    // Validation téléphone Maroc : 07XXXXXXXX, 06XXXXXXXX, ou +212XXXXXXXXX
-    const telNorm = tel.replace(/^(\+212|00212)/, '0');
-    if (!/^(06|07)\d{8}$/.test(telNorm)) {
-      err.textContent = 'Numéro invalide — format marocain requis (06/07XXXXXXXX ou +212XXXXXXXXX).'; err.style.display='block'; return;
+    // Validation téléphone Maroc : exactement 10 chiffres commençant par 0
+    let telNorm = tel;
+    if (telNorm.startsWith('212')) telNorm = '0' + telNorm.slice(3);
+    if (telNorm.startsWith('00212')) telNorm = '0' + telNorm.slice(5);
+    if (!/^0\d{9}$/.test(telNorm)) {
+      err.textContent = 'Numéro invalide — 10 chiffres commençant par 0 (ex: 0612345678).'; err.style.display='block'; return;
     }
 
     btn.disabled=true; btn.textContent='Envoi en cours...';
     try {
       const res = await fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-        body: JSON.stringify({ action:'saveInscription', matricule, nom, prenom, cin, telephone:telNorm, email, unite, poste, responsable }) });
+        body: JSON.stringify({ action:'saveInscription', matricule, nom, prenom, theme, cin, telephone:telNorm, email, unite, poste, responsable }) });
       const data = await res.json();
       if (!data.success) {
         if (data.error === 'deja_inscrit') throw new Error('Ce matricule est déjà inscrit.');
@@ -418,7 +426,7 @@
       ['insc-matricule','insc-nom','insc-prenom','insc-cin','insc-tel','insc-email'].forEach(id => {
         const el = document.getElementById(id); if(el) el.value='';
       });
-      ['insc-unite','insc-poste','insc-responsable'].forEach(id => {
+      ['insc-unite','insc-poste','insc-responsable','insc-theme'].forEach(id => {
         const el = document.getElementById(id); if(el) el.selectedIndex=0;
       });
     } catch(e) {
@@ -446,6 +454,7 @@
           const d2 = await r2.json();
           if (d2.success) currentConfig = d2.config;
         } catch(e) { console.warn('Erreur rechargement config :', e.message); }
+        showPage('access-page');
         document.getElementById('access-welcome').textContent = '👋 Bienvenue ' + (data.nom || matricule) + ' !';
         renderFiles(); startTimer();
       } else if (data.status === 'attente') {
