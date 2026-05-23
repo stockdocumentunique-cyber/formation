@@ -423,8 +423,9 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxiPHth9__A-D3zRQqpQZ-CDk-0THbGBgGf9sPCQ3XQJySRQCv2BPT70PhRD_NXtvwh/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrfNI4kA5JgasxxcCGt_SkxiudF9FIwyLgMhw1M6LPs1b5JJGJGrRjBMQoDYrI-Yme/exec";
   let currentConfig = null;
+  let currentStagiaire = { matricule: '', nom: '' };  // 🆕 Stagiaire actuellement connecté (pour injection dans liens COPAG Academy)
   let allInscriptions = [];
   let fichiersList = [];
   let currentFilter = 'all';
@@ -539,6 +540,7 @@
           if (d2.success) currentConfig = d2.config;
         } catch(e) { console.warn('Erreur rechargement config :', e.message); }
         showPage('access-page');
+        currentStagiaire = { matricule: matricule, nom: data.nom || matricule };  // 🆕 Mémoriser pour injection dans liens COPAG Academy
         document.getElementById('access-welcome').textContent = '👋 Bienvenue ' + (data.nom || matricule) + ' !';
         renderFiles(); startTimer();
       } else if (data.status === 'attente') {
@@ -635,12 +637,27 @@
     return url;
   }
 
+  // 🆕 Personnaliser les liens vers COPAG Academy avec le matricule et le nom du stagiaire connecté.
+  // Pour tout autre lien (Drive, YouTube, etc.), retourne l'URL inchangée.
+  function personalizeCopagLink(url) {
+    if (!url || !url.includes('milk-learn.netlify.app')) return url;
+    if (!currentStagiaire || !currentStagiaire.matricule) return url;
+    // Retirer d'éventuels anciens paramètres matricule/nom pour éviter les doublons
+    let cleanUrl = url.replace(/[?&](matricule|nom)=[^&]*/g, '');
+    // S'assurer qu'on n'a pas un ? ou & orphelin
+    cleanUrl = cleanUrl.replace(/[?&]$/, '');
+    const sep = cleanUrl.includes('?') ? '&' : '?';
+    const nomEnc = encodeURIComponent(currentStagiaire.nom).replace(/%20/g, '+');
+    return cleanUrl + sep + 'matricule=' + encodeURIComponent(currentStagiaire.matricule) + '&nom=' + nomEnc;
+  }
+
   function renderFiles() {
     const fichiers = currentConfig?.fichiers || [];
     const c = document.getElementById('files-list'); c.innerHTML = '';
     fichiers.forEach(f => {
       const a = document.createElement('a');
-      const dlUrl = convertDriveUrl(f.url);
+      // 🆕 Personnaliser le lien si c'est COPAG Academy
+      const dlUrl = personalizeCopagLink(convertDriveUrl(f.url));
       a.href = dlUrl; a.target='_blank'; a.rel='noopener noreferrer'; a.className='file-card checking'; a.download='';
       a.innerHTML = `<div class="file-icon" id="icon-${encodeURIComponent(f.name)}">
         <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#60a5fa" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -663,6 +680,8 @@
 
   async function checkDriveLink(url) {
     if (!url || url.trim() === '') return false;
+    // 🆕 COPAG Academy : on considère toujours le lien comme disponible (pas besoin de check HEAD)
+    if (url.includes('milk-learn.netlify.app')) return true;
     try { await fetch(url, { method:'HEAD', mode:'no-cors' }); return true; } catch(e) { return false; }
   }
 
