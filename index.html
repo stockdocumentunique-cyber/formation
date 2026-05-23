@@ -132,16 +132,6 @@
         </div>
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </div>
-      <div class="home-btn" onclick="showPage('dejainscrit-page');">
-        <div class="home-btn-icon green">
-          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-        <div class="home-btn-text">
-          <h3>Déjà inscrit</h3>
-          <p>Accéder aux supports de formation</p>
-        </div>
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-      </div>
       <div class="home-btn" onclick="showPage('presence-page'); loadPresencePage();">
         <div class="home-btn-icon" style="background:#cffafe;">
           <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#0891b2" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
@@ -149,6 +139,16 @@
         <div class="home-btn-text">
           <h3>Confirmer ma présence</h3>
           <p>Pointer votre présence à la formation</p>
+        </div>
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </div>
+      <div class="home-btn" onclick="showPage('dejainscrit-page');">
+        <div class="home-btn-icon green">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#16a34a" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="home-btn-text">
+          <h3>Quiz &amp; Support</h3>
+          <p>Accéder au quiz et supports</p>
         </div>
         <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#cbd5e1" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
       </div>
@@ -423,7 +423,7 @@
 </div>
 
 <script>
-  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyX5QR4PSw1n_eQatDI9U6py1i7hvr-fPV6xcRApOXf7eN536dl68xXGKs6R7y1s92T/exec";
+  let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrfNI4kA5JgasxxcCGt_SkxiudF9FIwyLgMhw1M6LPs1b5JJGJGrRjBMQoDYrI-Yme/exec";
   let currentConfig = null;
   let allInscriptions = [];
   let fichiersList = [];
